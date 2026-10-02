@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MM-Lab ห้องทดลองมัลติมีเดีย</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Kanit:wght@400;500;600;700&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-subtle: #f1f5f9;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: #e2e8f0;
+            --accent-primary: #2563eb;
+            --accent-hover: #1d4ed8;
+            --badge-locked: #94a3b8;
+            --badge-success: #16a34a;
+            --canvas-bg: #1e293b;
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-subtle: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent-primary: #3b82f6;
+            --accent-hover: #60a5fa;
+            --badge-locked: #64748b;
+            --badge-success: #22c55e;
+            --canvas-bg: #020617;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg-main: #0f172a;
+                --bg-card: #1e293b;
+                --bg-subtle: #334155;
+                --text-main: #f8fafc;
+                --text-muted: #94a3b8;
+                --border-color: #334155;
+                --accent-primary: #3b82f6;
+                --accent-hover: #60a5fa;
+                --badge-locked: #64748b;
+                --badge-success: #22c55e;
+                --canvas-bg: #020617;
+            }
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1, h2, h3, h4, h5, h6, .font-kanit {
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .font-mono-num {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        /* Pixel art rendering for image lab */
+        .pixelated {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* Custom range slider styling */
+        input[type=range] {
+            accent-color: var(--accent-primary);
+            height: 8px;
+            border-radius: 4px;
+        }
+
+        /* Smooth UI transitions */
+        .tab-btn {
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Respect reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-blue-500 selection:text-white">
+
+    <!-- Navigation & Badge Header -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-opacity-90 border-b border-gray-200 dark:border-gray-800" style="background-color: var(--bg-card);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <!-- App Title -->
+                <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+                    <div class="flex items-center space-x-2">
+                        <div class="p-2 bg-blue-600 text-white rounded-xl shadow-lg">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold leading-tight">MM-Lab</h1>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">ห้องทดลองมัลติมีเดียเชิงโต้ตอบ</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Dark/Light Theme Toggle -->
+                    <button id="themeToggleBtn" aria-label="เปลี่ยนธีม" class="p-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 transition">
+                        <svg id="themeIconSun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg id="themeIconMoon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Progress Badges -->
+                <div class="flex items-center justify-center space-x-1 sm:space-x-2 overflow-x-auto w-full md:w-auto py-1">
+                    <div id="badge-st1" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border border-transparent transition">
+                        <span class="badge-icon">⚪</span><span>ข้อความ</span>
+                    </div>
+                    <div id="badge-st2" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border border-transparent transition">
+                        <span class="badge-icon">⚪</span><span>ภาพ</span>
+                    </div>
+                    <div id="badge-st3" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border border-transparent transition">
+                        <span class="badge-icon">⚪</span><span>เสียง</span>
+                    </div>
+                    <div id="badge-st4" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border border-transparent transition">
+                        <span class="badge-icon">⚪</span><span>วิดีโอ</span>
+                    </div>
+                    <div id="badge-st5" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border border-transparent transition">
+                        <span class="badge-icon">⚪</span><span>สรุป</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <nav class="flex space-x-2 mt-3 overflow-x-auto pb-1 no-scrollbar border-t border-gray-200 dark:border-gray-800 pt-2">
+                <button onclick="switchTab(1)" id="tab-btn-1" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap bg-blue-600 text-white shadow-sm">
+                    1. ข้อความและสี
+                </button>
+                <button onclick="switchTab(2)" id="tab-btn-2" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    2. ภาพดิจิทัล
+                </button>
+                <button onclick="switchTab(3)" id="tab-btn-3" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    3. เสียงดิจิทัล
+                </button>
+                <button onclick="switchTab(4)" id="tab-btn-4" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    4. วิดีโอดิจิทัล
+                </button>
+                <button onclick="switchTab(5)" id="tab-btn-5" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    5. ภารกิจสรุป
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+        <!-- STATION 1: TEXT & COLOR -->
+        <section id="station-1" class="station-content block">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Controls Column -->
+                <div class="lg:col-span-5 p-5 rounded-2xl border shadow-sm space-y-5" style="background-color: var(--bg-card); border-color: var(--border-color);">
+                    <div>
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+                            ตัวควบคุมความต่างสีและข้อความ
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ทดลองปรับเปลี่ยนสีและขนาดฟอนต์เพื่อศึกษาการอ่านได้ตามมาตรฐาน WCAG 2.1</p>
+                    </div>
+
+                    <!-- Color Inputs -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">สีข้อความ (Text Color)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="st1-text-color" value="#888888" class="w-10 h-10 rounded cursor-pointer border-0 p-0">
+                                <span id="st1-text-hex" class="text-xs font-mono-num font-semibold">#888888</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">สีพื้นหลัง (Background)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="st1-bg-color" value="#ffffff" class="w-10 h-10 rounded cursor-pointer border-0 p-0">
+                                <span id="st1-bg-hex" class="text-xs font-mono-num font-semibold">#FFFFFF</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Size & Weight Inputs -->
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-semibold">ขนาดอักษร (Font Size)</label>
+                                <span id="st1-size-val" class="text-xs font-mono-num font-bold text-blue-600 dark:text-blue-400">16 px</span>
+                            </div>
+                            <input type="range" id="st1-size-slider" min="12" max="40" value="16" class="w-full">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">น้ำหนักอักษร (Font Weight)</label>
+                            <div class="flex gap-2">
+                                <button type="button" id="st1-weight-normal" onclick="setSt1Weight('normal')" class="flex-1 py-1.5 text-xs font-medium rounded-lg border border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                                    ปกติ (Normal)
+                                </button>
+                                <button type="button" id="st1-weight-bold" onclick="setSt1Weight('bold')" class="flex-1 py-1.5 text-xs font-medium rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                    ตัวหนา (Bold)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preset Color Combos -->
+                    <div>
+                        <label class="block text-xs font-semibold mb-2">ชุดสีตัวอย่างที่พบบ่อย</label>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <button onclick="applySt1Preset('#1e293b', '#ffffff')" class="p-2 text-left rounded border hover:border-blue-500 flex justify-between items-center">
+                                <span>ดำบนขาว</span>
+                                <span class="w-4 h-4 rounded border" style="background:#fff; border-color:#1e293b"></span>
+                            </button>
+                            <button onclick="applySt1Preset('#94a3b8', '#ffffff')" class="p-2 text-left rounded border hover:border-blue-500 flex justify-between items-center">
+                                <span>เทาอ่อนบนขาว</span>
+                                <span class="w-4 h-4 rounded border" style="background:#fff; border-color:#94a3b8"></span>
+                            </button>
+                            <button onclick="applySt1Preset('#e2e8f0', '#2563eb')" class="p-2 text-left rounded border hover:border-blue-500 flex justify-between items-center">
+                                <span>เทาบนน้ำเงิน</span>
+                                <span class="w-4 h-4 rounded border" style="background:#2563eb; border-color:#e2e8f0"></span>
+                            </button>
+                            <button onclick="applySt1Preset('#facc15', '#0f172a')" class="p-2 text-left rounded border hover:border-blue-500 flex justify-between items-center">
+                                <span>เหลืองบนดำ</span>
+                                <span class="w-4 h-4 rounded border" style="background:#0f172a; border-color:#facc15"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Preview Column -->
+                <div class="lg:col-span-7 flex flex-col justify-between space-y-5">
+                    <!-- Text Preview Card -->
+                    <div id="st1-preview-box" class="p-6 rounded-2xl border shadow-sm min-h-[220px] flex flex-col justify-center transition-all duration-150" style="background-color: #ffffff;">
+                        <p id="st1-preview-th" class="transition-all" style="color: #888888; font-size: 16px; font-weight: normal;">
+                            การออกแบบสื่อมัลติมีเดียต้องคำนึงถึงความสะดวกในการอ่านของผู้เรียนทุกคน (Accessibility)
+                        </p>
+                        <p id="st1-preview-en" class="mt-3 transition-all" style="color: #888888; font-size: 16px; font-weight: normal;">
+                            Multimedia design must prioritize text legibility and high contrast ratios for optimal user experience.
+                        </p>
+                    </div>
+
+                    <!-- Calculated Calculations Card -->
+                    <div class="p-5 rounded-2xl border shadow-sm space-y-4" style="background-color: var(--bg-card); border-color: var(--border-color);">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold">อัตราส่วนความต่างสี (Contrast Ratio)</span>
+                            <span id="st1-contrast-val" class="text-2xl font-extrabold font-mono-num text-blue-600 dark:text-blue-400">2.85:1</span>
+                        </div>
+
+                        <!-- WCAG Matrix Badges -->
+                        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                            <div id="st1-status-aa-norm" class="p-2.5 rounded-xl border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                <div class="font-bold">AA ข้อความปกติ</div>
+                                <div class="text-[10px] text-gray-500">เกณฑ์ >= 4.5:1</div>
+                                <div class="status-tag font-bold mt-1 text-red-500">ไม่ผ่าน</div>
+                            </div>
+                            <div id="st1-status-aa-large" class="p-2.5 rounded-xl border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                <div class="font-bold">AA ข้อความใหญ่</div>
+                                <div class="text-[10px] text-gray-500">เกณฑ์ >= 3.0:1</div>
+                                <div class="status-tag font-bold mt-1 text-red-500">ไม่ผ่าน</div>
+                            </div>
+                            <div id="st1-status-aaa-norm" class="p-2.5 rounded-xl border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                <div class="font-bold">AAA ข้อความปกติ</div>
+                                <div class="text-[10px] text-gray-500">เกณฑ์ >= 7.0:1</div>
+                                <div class="status-tag font-bold mt-1 text-red-500">ไม่ผ่าน</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mission Target Box -->
+                    <div id="st1-mission-box" class="p-4 rounded-xl border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700/50 transition">
+                        <div class="flex items-start gap-3">
+                            <div class="text-2xl" id="st1-mission-icon">🎯</div>
+                            <div class="flex-1">
+                                <h3 class="text-sm font-bold text-amber-900 dark:text-amber-200">ภารกิจประจำสถานีที่ 1</h3>
+                                <p class="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
+                                    ปรับสีข้อความหรือสีพื้นหลังให้ได้ความต่างสีผ่านเกณฑ์ **WCAG AA (>= 4.5:1)** โดย **คงขนาดอักษรไม่เกิน 18 px** และ **คงน้ำหนักเป็นตัวปกติ**
+                                </p>
+                                <div id="st1-mission-status" class="mt-2 text-xs font-bold text-amber-700 dark:text-amber-400">
+                                    สถานะ: ยังไม่สำเร็จ (ปรับเปลี่ยนสีเพื่อบรรลุภารกิจ)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATION 2: DIGITAL IMAGE -->
+        <section id="station-2" class="station-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Controls Column -->
+                <div class="lg:col-span-5 p-5 rounded-2xl border shadow-sm space-y-5" style="background-color: var(--bg-card); border-color: var(--border-color);">
+                    <div>
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                            ตัวควบคุมภาพดิจิทัล
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ทดลองปรับความละเอียดและจำนวนบิตเพื่อดูผลกระทบต่อคุณภาพภาพและขนาดไฟล์</p>
+                    </div>
+
+                    <!-- Resolution Scale Slider -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold">สเกลความละเอียด (Resolution)</label>
+                            <span id="st2-res-val" class="text-xs font-mono-num font-bold text-emerald-600 dark:text-emerald-400">100% (1280x720)</span>
+                        </div>
+                        <input type="range" id="st2-res-slider" min="3" max="100" value="100" class="w-full">
+                    </div>
+
+                    <!-- Color Depth Slider -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold">บิตต่อแม่สี (Bits per Channel - RGB)</label>
+                            <span id="st2-bit-val" class="text-xs font-mono-num font-bold text-emerald-600 dark:text-emerald-400">8 บิต/ช่อง (24-bit TrueColor)</span>
+                        </div>
+                        <input type="range" id="st2-bit-slider" min="1" max="8" value="8" class="w-full">
+                    </div>
+
+                    <!-- RGB Channel Inspector Slider -->
+                    <div class="p-3 rounded-xl border bg-gray-50 dark:bg-gray-800/50 space-y-2 border-gray-200 dark:border-gray-700">
+                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300">เครื่องมือทดสอบสีพิกเซล (RGB Color Mixer)</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <span class="text-[10px] text-red-500 font-bold block">Red</span>
+                                <input type="range" id="st2-r-slider" min="0" max="255" value="220" class="w-full">
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-green-500 font-bold block">Green</span>
+                                <input type="range" id="st2-g-slider" min="0" max="255" value="100" class="w-full">
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-blue-500 font-bold block">Blue</span>
+                                <input type="range" id="st2-b-slider" min="0" max="255" value="50" class="w-full">
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center pt-1">
+                            <div class="flex items-center gap-2">
+                                <div id="st2-color-preview" class="w-6 h-6 rounded border border-gray-400 shadow-inner" style="background-color: #dc6432;"></div>
+                                <span id="st2-color-hex" class="text-xs font-mono-num font-bold">#DC6432</span>
+                            </div>
+                            <span id="st2-quantized-color-note" class="text-[10px] text-gray-500">หลังลดบิต: <span id="st2-quant-hex" class="font-mono-num font-bold text-emerald-600">#DC6432</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview & Calculations Column -->
+                <div class="lg:col-span-7 flex flex-col justify-between space-y-5">
+                    <!-- Image Canvas Container -->
+                    <div class="p-3 rounded-2xl border shadow-sm flex flex-col items-center justify-center relative overflow-hidden" style="background-color: var(--canvas-bg); border-color: var(--border-color);">
+                        <canvas id="st2-canvas" width="1280" height="720" class="w-full h-auto max-h-[320px] rounded-lg border border-gray-700 pixelated object-contain"></canvas>
+                        <div class="absolute bottom-5 right-5 bg-black/70 text-white px-2.5 py-1 rounded-md text-[11px] font-mono-num backdrop-blur-sm">
+                            <span id="st2-canvas-dim">1280 x 720 px</span>
+                        </div>
+                    </div>
+
+                    <!-- Calculated Calculations Card -->
+                    <div class="p-5 rounded-2xl border shadow-sm grid grid-cols-2 sm:grid-cols-3 gap-4" style="background-color: var(--bg-card); border-color: var(--border-color);">
+                        <div>
+                            <div class="text-xs text-gray-500">จำนวนสีที่เป็นไปได้</div>
+                            <div id="st2-calc-colors" class="text-lg font-bold font-mono-num text-emerald-600 dark:text-emerald-400">16,777,216</div>
+                            <div class="text-[10px] text-gray-400">(2^3b = 2^24)</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">ขนาดภาพดิบ (Raw Uncompressed)</div>
+                            <div id="st2-calc-bytes" class="text-lg font-bold font-mono-num text-emerald-600 dark:text-emerald-400">2,764,800 B</div>
+                            <div id="st2-calc-mb" class="text-[11px] text-gray-500 font-mono-num">2.64 MB</div>
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <div class="text-xs text-gray-500">สูตรการคำนวณขนาดดิบ</div>
+                            <div class="text-[11px] font-mono-num text-gray-600 dark:text-gray-300 mt-1">
+                                W x H x b x 3 / 8
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mission Target Box -->
+                    <div id="st2-mission-box" class="p-4 rounded-xl border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700/50 transition">
+                        <div class="flex items-start gap-3">
+                            <div class="text-2xl" id="st2-mission-icon">🎯</div>
+                            <div class="flex-1">
+                                <h3 class="text-sm font-bold text-amber-900 dark:text-amber-200">ภารกิจประจำสถานีที่ 2</h3>
+                                <p class="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
+                                    ลดขนาดภาพดิบให้อยู่ **ต่ำกว่า 1 MB (1,048,576 ไบต์)** โดยคง **บิตต่อแม่สีที่ 8 บิต** และความกว้าง **ไม่ต่ำกว่า 640 พิกเซล**
+                                </p>
+                                <div id="st2-mission-status" class="mt-2 text-xs font-bold text-amber-700 dark:text-amber-400">
+                                    สถานะ: ยังไม่สำเร็จ (ปัจจุบันขนาด 2.64 MB)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATION 3: DIGITAL AUDIO -->
+        <section id="station-3" class="station-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Controls Column -->
+                <div class="lg:col-span-5 p-5 rounded-2xl border shadow-sm space-y-5" style="background-color: var(--bg-card); border-color: var(--border-color);">
+                    <div>
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span>
+                            ตัวควบคุมการสุ่มสัญญาณเสียง
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ทดลองปรับอัตราสุ่ม (Sampling Rate) และความลึกบิต (Bit Depth) ของสัญญาณเสียง 440 Hz (โน้ต A4)</p>
+                    </div>
+
+                    <!-- Sampling Rate Select -->
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">อัตราสุ่มตัวอย่าง (Sampling Rate - Hz)</label>
+                        <select id="st3-rate-select" class="w-full p-2 rounded-lg border text-sm font-mono-num bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+                            <option value="500">500 Hz (ต่ำมาก)</option>
+                            <option value="800">800 Hz (ต่ำกว่า Nyquist)</option>
+                            <option value="1000">1,000 Hz</option>
+                            <option value="2000">2,000 Hz</option>
+                            <option value="4000">4,000 Hz</option>
+                            <option value="8000" selected>8,000 Hz (โทรศัพท์)</option>
+                            <option value="11025">11,025 Hz</option>
+                            <option value="22050">22,050 Hz (FM Radio)</option>
+                            <option value="44100">44,100 Hz (CD Quality)</option>
+                        </select>
+                    </div>
+
+                    <!-- Bit Depth Slider -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold">ความลึกบิต (Bit Depth)</label>
+                            <span id="st3-bit-val" class="text-xs font-mono-num font-bold text-purple-600 dark:text-purple-400">16 บิต (65,536 ระดับ)</span>
+                        </div>
+                        <input type="range" id="st3-bit-slider" min="1" max="16" value="16" class="w-full">
+                    </div>
+
+                    <!-- Audio Play Controls -->
+                    <div class="p-4 rounded-xl border bg-purple-50/50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800/50 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <button id="st3-play-btn" onclick="playAudioSample()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg shadow-md flex items-center gap-2 transition active:scale-95">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>
+                                ทดลองฟังเสียงสังเคราะห์ (1 วินาที)
+                            </button>
+                        </div>
+                        <p id="st3-audio-msg" class="text-[11px] text-purple-900 dark:text-purple-300">
+                            * เสียงสังเคราะห์จาก Web Audio API ทำงานตามค่าสุ่มและ quantization จริง (เฉพาะอัตรา >= 8000 Hz)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Graphic Wave & Calculations Column -->
+                <div class="lg:col-span-7 flex flex-col justify-between space-y-5">
+                    <!-- Canvas Waveform View -->
+                    <div class="p-3 rounded-2xl border shadow-sm flex flex-col items-center justify-center relative" style="background-color: var(--canvas-bg); border-color: var(--border-color);">
+                        <canvas id="st3-canvas" width="800" height="300" class="w-full h-auto max-h-[260px] rounded-lg"></canvas>
+                        <div class="flex justify-around w-full text-[10px] text-gray-400 mt-2 px-2">
+                            <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-gray-500 inline-block"></span> สัญญาณอนาล็อกต้นฉบับ (440 Hz)</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span> จุดสุ่มตัวอย่าง (Samples)</span>
+                            <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-purple-500 inline-block"></span> สัญญาณดิจิทัล (Quantized)</span>
+                        </div>
+                    </div>
+
+                    <!-- Calculated Values -->
+                    <div class="p-5 rounded-2xl border shadow-sm grid grid-cols-2 sm:grid-cols-4 gap-3" style="background-color: var(--bg-card); border-color: var(--border-color);">
+                        <div>
+                            <div class="text-[11px] text-gray-500">เงื่อนไข Nyquist</div>
+                            <div id="st3-calc-nyquist" class="text-sm font-bold text-green-600 dark:text-green-400 mt-0.5">ผ่าน (>880 Hz)</div>
+                            <div class="text-[9px] text-gray-400">fs > 2 x 440 Hz</div>
+                        </div>
+                        <div>
+                            <div class="text-[11px] text-gray-500">จุดสุ่มต่อ 1 คาบ</div>
+                            <div id="st3-calc-pts" class="text-sm font-bold font-mono-num text-purple-600 dark:text-purple-400 mt-0.5">18.18 จุด</div>
+                            <div class="text-[9px] text-gray-400">fs / 440 Hz</div>
+                        </div>
+                        <div>
+                            <div class="text-[11px] text-gray-500">จำนวนระดับเสียง</div>
+                            <div id="st3-calc-levels" class="text-sm font-bold font-mono-num text-purple-600 dark:text-purple-400 mt-0.5">65,536 ระดับ</div>
+                            <div class="text-[9px] text-gray-400">2^bitDepth</div>
+                        </div>
+                        <div>
+                            <div class="text-[11px] text-gray-500">ขนาดดิบโมโน / วินาที</div>
+                            <div id="st3-calc-bytes" class="text-sm font-bold font-mono-num text-purple-600 dark:text-purple-400 mt-0.5">16.00 KB/s</div>
+                            <div class="text-[9px] text-gray-400">rate x bit / 8</div>
+                        </div>
+                    </div>
+
+                    <!-- Mission Target Box -->
+                    <div id="st3-mission-box" class="p-4 rounded-xl border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700/50 transition">
+                        <div class="flex items-start gap-3">
+                            <div class="text-2xl" id="st3-mission-icon">🎯</div>
+                            <div class="flex-1">
+                                <h3 class="text-sm font-bold text-amber-900 dark:text-amber-200">ภารกิจประจำสถานีที่ 3</h3>
+                                <p class="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
+                                    ตั้งค่าให้ **ผ่านเงื่อนไข Nyquist**, ใช้ความลึกบิต **ไม่ต่ำกว่า 8 บิต** และควบคุมขนาดดิบเสียง **ไม่เกิน 20 KB/s**
+                                </p>
+                                <div id="st3-mission-status" class="mt-2 text-xs font-bold text-amber-700 dark:text-amber-400">
+                                    สถานะ: ยังไม่สำเร็จ
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATION 4: DIGITAL VIDEO -->
+        <section id="station-4" class="station-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Controls Column -->
+                <div class="lg:col-span-5 p-5 rounded-2xl border shadow-sm space-y-5" style="background-color: var(--bg-card); border-color: var(--border-color);">
+                    <div>
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                            ตัวควบคุมวิดีโอดิจิทัล
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ศึกษาผลของอัตราเฟรม (FPS) ต่อความลื่นไหล และอัตราการบีบอัดต่อบิตเรตที่ต้องใช้</p>
+                    </div>
+
+                    <!-- FPS Slider -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold">อัตราเฟรม (Frame Rate - FPS)</label>
+                            <span id="st4-fps-val" class="text-xs font-mono-num font-bold text-rose-600 dark:text-rose-400">24 FPS</span>
+                        </div>
+                        <input type="range" id="st4-fps-slider" min="2" max="60" value="24" class="w-full">
+                    </div>
+
+                    <!-- Compression Ratio Slider (Logarithmic scaling index 0-100) -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold">อัตราส่วนการบีบอัดสมมติ (Compression Ratio)</label>
+                            <span id="st4-comp-val" class="text-xs font-mono-num font-bold text-rose-600 dark:text-rose-400">1 : 1 (Uncompressed)</span>
+                        </div>
+                        <input type="range" id="st4-comp-slider" min="1" max="300" value="1" class="w-full">
+                    </div>
+
+                    <div class="p-3.5 rounded-xl border bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40 text-xs space-y-1">
+                        <div class="font-bold text-rose-900 dark:text-rose-300">💡 การบีบอัดในความเป็นจริง (Codec Note)</div>
+                        <p class="text-gray-600 dark:text-gray-400 text-[11px] leading-relaxed">
+                            อัตราส่วนการบีบอัดในสถานีนี้เป็นค่าจำลองเพื่อการศึกษา ของจริงขึ้นกับอัลกอริทึม เช่น H.264, HEVC, AV1 และระดับการเคลื่อนไหวในวิดีโอ
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Simulation Animation & Video Calculations -->
+                <div class="lg:col-span-7 flex flex-col justify-between space-y-5">
+                    <!-- Animation Canvas Preview -->
+                    <div class="p-3 rounded-2xl border shadow-sm flex flex-col items-center justify-center relative" style="background-color: var(--canvas-bg); border-color: var(--border-color);">
+                        <canvas id="st4-canvas" width="800" height="350" class="w-full h-auto max-h-[260px] rounded-lg"></canvas>
+                        <div class="absolute top-5 left-5 bg-black/70 text-white px-3 py-1.5 rounded-lg text-xs font-mono-num backdrop-blur-md space-y-0.5">
+                            <div>เฟรมที่: <span id="st4-frame-counter" class="text-rose-400 font-bold">0</span></div>
+                            <div>เวลาจำลอง: <span id="st4-time-counter" class="text-amber-400 font-bold">0.00 s</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Calculated Calculations Matrix -->
+                    <div class="p-5 rounded-2xl border shadow-sm grid grid-cols-2 sm:grid-cols-3 gap-4" style="background-color: var(--bg-card); border-color: var(--border-color);">
+                        <div>
+                            <div class="text-xs text-gray-500">ข้อมูลดิบต่อเฟรม (1280x720 24-bit)</div>
+                            <div class="text-sm font-bold font-mono-num text-rose-600 dark:text-rose-400">2.76 MB</div>
+                            <div class="text-[10px] text-gray-400">(1280 x 720 x 3 Bytes)</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">อัตราบิตหลังบีบอัด (Bitrate)</div>
+                            <div id="st4-calc-bitrate" class="text-sm font-bold font-mono-num text-rose-600 dark:text-rose-400">530.84 Mbit/s</div>
+                            <div id="st4-calc-raw-bitrate" class="text-[10px] text-gray-400">(ดิบ: 530.84 Mbps)</div>
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <div class="text-xs text-gray-500">ขนาดไฟล์วิดีโอ 1 นาที</div>
+                            <div id="st4-calc-size-1min" class="text-sm font-bold font-mono-num text-rose-600 dark:text-rose-400">3.88 GB</div>
+                            <div class="text-[10px] text-gray-400">รวมภาพ + ไม่คิดเสียง</div>
+                        </div>
+                    </div>
+
+                    <!-- Mission Target Box -->
+                    <div id="st4-mission-box" class="p-4 rounded-xl border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700/50 transition">
+                        <div class="flex items-start gap-3">
+                            <div class="text-2xl" id="st4-mission-icon">🎯</div>
+                            <div class="flex-1">
+                                <h3 class="text-sm font-bold text-amber-900 dark:text-amber-200">ภารกิจประจำสถานีที่ 4</h3>
+                                <p class="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
+                                    ลดอัตราบิตหลังบีบอัดให้ **ไม่เกิน 5.0 Mbit/s** โดยรักษาอัตราเฟรม **ไม่ต่ำกว่า 24 FPS** (เพื่อให้วิดีโอลื่นไหลเพียงพอ)
+                                </p>
+                                <div id="st4-mission-status" class="mt-2 text-xs font-bold text-amber-700 dark:text-amber-400">
+                                    สถานะ: ยังไม่สำเร็จ
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATION 5: SUMMARY QUIZ -->
+        <section id="station-5" class="station-content hidden">
+            <div class="max-w-4xl mx-auto p-6 rounded-2xl border shadow-sm space-y-6" style="background-color: var(--bg-card); border-color: var(--border-color);">
+                <div class="border-b pb-4 border-gray-200 dark:border-gray-800 flex justify-between items-center flex-wrap gap-2">
+                    <div>
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 rounded-full bg-blue-600 inline-block"></span>
+                            แบบทดสอบสรุปความรู้มัลติมีเดีย (Final Quiz)
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ประเมินความเข้าใจสถานการณ์การใช้งานมัลติมีเดียทั้ง 5 ข้อ ตอบถูกต้องทุกข้อเพื่อปลดล็อกตราประทับสุดท้าย</p>
+                    </div>
+                    <button onclick="resetQuiz()" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                        🔄 เริ่มทำแบบทดสอบใหม่
+                    </button>
+                </div>
+
+                <!-- Quiz Questions Container -->
+                <div id="quiz-container" class="space-y-6">
+                    <!-- Dynamic Question Rendering via JS -->
+                </div>
+
+                <!-- Quiz Result Banner -->
+                <div id="quiz-result-banner" class="hidden p-5 rounded-xl text-center space-y-2 border transition">
+                    <div id="quiz-score-text" class="text-lg font-bold"></div>
+                    <p id="quiz-msg" class="text-xs text-gray-600 dark:text-gray-300"></p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 dark:border-gray-800 py-6 mt-12" style="background-color: var(--bg-card);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+            <div>
+                <p class="font-semibold text-gray-700 dark:text-gray-300">MM-Lab สื่อมัลติมีเดียเชิงโต้ตอบสำหรับการศึกษาครูคอมพิวเตอร์</p>
+                <p class="mt-0.5">หมายเหตุ: ค่าขนาดไฟล์และบิตเรตในสื่อนี้เป็นค่าคำนวณดิบ (Raw uncompressed/ideal values) จากสูตรทางทฤษฎีเพื่อสร้างความเข้าใจเชิงมโนทัศน์</p>
+            </div>
+            <div class="text-right sm:text-right text-[11px]">
+                <p>อ้างอิงเกณฑ์: WCAG 2.1 (W3C) | Nyquist-Shannon Sampling Theorem</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global Application State & Storage Key
+        const STORAGE_KEY = 'mmlab_progress_v1';
+        let userProgress = {
+            st1: false,
+            st2: false,
+            st3: false,
+            st4: false,
+            st5: false
+        };
+
+        // Try load from LocalStorage safely
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                userProgress = Object.assign(userProgress, JSON.parse(saved));
+            }
+        } catch (e) {
+            console.warn('LocalStorage unavailable:', e);
+        }
+
+        function saveProgress() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(userProgress));
+            } catch (e) {
+                console.warn('Could not save progress:', e);
+            }
+            updateBadgesUI();
+        }
+
+        function updateBadgesUI() {
+            const badges = ['st1', 'st2', 'st3', 'st4', 'st5'];
+            badges.forEach(id => {
+                const el = document.getElementById(`badge-${id}`);
+                if (!el) return;
+                const iconSpan = el.querySelector('.badge-icon');
+                if (userProgress[id]) {
+                    el.className = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 transition";
+                    if (iconSpan) iconSpan.textContent = '✅';
+                } else {
+                    el.className = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border border-transparent transition";
+                    if (iconSpan) iconSpan.textContent = '⚪';
+                }
+            });
+        }
+
+        function initTheme() {
+            const themeBtn = document.getElementById('themeToggleBtn');
+            const sunIcon = document.getElementById('themeIconSun');
+            const moonIcon = document.getElementById('themeIconMoon');
+
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                if (theme === 'dark') {
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                } else {
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                }
+            }
+
+            // System default or current attribute
+            const isDarkPreferred = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let currentTheme = isDarkPreferred ? 'dark' : 'light';
+            applyTheme(currentTheme);
+
+            themeBtn.addEventListener('click', () => {
+                currentTheme = (document.documentElement.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+                applyTheme(currentTheme);
+                // Redraw canvases on theme change for contrast adjustments if necessary
+                renderStation1();
+                renderStation2();
+                renderStation3();
+            });
+        }
+
+        function switchTab(stationNumber) {
+            for (let i = 1; i <= 5; i++) {
+                const sec = document.getElementById(`station-${i}`);
+                const btn = document.getElementById(`tab-btn-${i}`);
+                if (i === stationNumber) {
+                    sec.classList.remove('hidden');
+                    btn.className = "tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap bg-blue-600 text-white shadow-sm";
+                } else {
+                    sec.classList.add('hidden');
+                    btn.className = "tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800";
+                }
+            }
+            // Trigger redraws for visible canvas dimensions
+            if (stationNumber === 2) renderStation2();
+            if (stationNumber === 3) renderStation3();
+            if (stationNumber === 4) initStation4Loop();
+        }
+
+        // WCAG relative luminance calculation helper
+        function getRelativeLuminance(hexColor) {
+            let rgb = hexToRgb(hexColor);
+            let rs = rgb.r / 255;
+            let gs = rgb.g / 255;
+            let bs = rgb.b / 255;
+
+            let R = (rs <= 0.03928) ? rs / 12.92 : Math.pow((rs + 0.055) / 1.055, 2.4);
+            let G = (gs <= 0.03928) ? gs / 12.92 : Math.pow((gs + 0.055) / 1.055, 2.4);
+            let B = (bs <= 0.03928) ? bs / 12.92 : Math.pow((bs + 0.055) / 1.055, 2.4);
+
+            return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+        }
+
+        function calculateContrastRatio(hex1, hex2) {
+            let l1 = getRelativeLuminance(hex1);
+            let l2 = getRelativeLuminance(hex2);
+            let lMax = Math.max(l1, l2);
+            let lMin = Math.min(l1, l2);
+            return (lMax + 0.05) / (lMin + 0.05);
+        }
+
+        function hexToRgb(hex) {
+            hex = hex.replace('#', '');
+            if (hex.length === 3) {
+                hex = hex.split('').map(c => c + c).join('');
+            }
+            let num = parseInt(hex, 16);
+            return {
+                r: (num >> 16) & 255,
+                g: (num >> 8) & 255,
+                b: num & 255
+            };
+        }
+
+        let st1FontWeight = 'normal';
+
+        function setSt1Weight(weight) {
+            st1FontWeight = weight;
+            const btnNormal = document.getElementById('st1-weight-normal');
+            const btnBold = document.getElementById('st1-weight-bold');
+
+            if (weight === 'normal') {
+                btnNormal.className = "flex-1 py-1.5 text-xs font-medium rounded-lg border border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400";
+                btnBold.className = "flex-1 py-1.5 text-xs font-medium rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800";
+            } else {
+                btnBold.className = "flex-1 py-1.5 text-xs font-medium rounded-lg border border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400";
+                btnNormal.className = "flex-1 py-1.5 text-xs font-medium rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800";
+            }
+            renderStation1();
+        }
+
+        function applySt1Preset(textColor, bgColor) {
+            document.getElementById('st1-text-color').value = textColor;
+            document.getElementById('st1-bg-color').value = bgColor;
+            renderStation1();
+        }
+
+        function renderStation1() {
+            const textColor = document.getElementById('st1-text-color').value;
+            const bgColor = document.getElementById('st1-bg-color').value;
+            const fontSize = parseInt(document.getElementById('st1-size-slider').value);
+
+            document.getElementById('st1-text-hex').textContent = textColor.toUpperCase();
+            document.getElementById('st1-bg-hex').textContent = bgColor.toUpperCase();
+            document.getElementById('st1-size-val').textContent = `${fontSize} px`;
+
+            // Update preview box styles
+            const previewBox = document.getElementById('st1-preview-box');
+            previewBox.style.backgroundColor = bgColor;
+
+            const pTh = document.getElementById('st1-preview-th');
+            const pEn = document.getElementById('st1-preview-en');
+
+            [pTh, pEn].forEach(p => {
+                p.style.color = textColor;
+                p.style.fontSize = `${fontSize}px`;
+                p.style.fontWeight = st1FontWeight;
+            });
+
+            // Calculate Contrast Ratio
+            const ratio = calculateContrastRatio(textColor, bgColor);
+            document.getElementById('st1-contrast-val').textContent = `${ratio.toFixed(2)}:1`;
+
+            // WCAG Standard checks
+            // Large text definition: >= 24px OR (>= 18.66px and bold)
+            const isLargeText = (fontSize >= 24) || (fontSize >= 18.66 && st1FontWeight === 'bold');
+
+            const passAANormal = ratio >= 4.5;
+            const passAALarge = ratio >= 3.0;
+            const passAAANormal = ratio >= 7.0;
+
+            updateStatusBadge('st1-status-aa-norm', passAANormal);
+            updateStatusBadge('st1-status-aa-large', passAALarge);
+            updateStatusBadge('st1-status-aaa-norm', passAAANormal);
+
+            // Mission 1 Condition Check:
+            // Goal: Contrast ratio >= 4.5:1 AND fontSize <= 18px AND font weight == 'normal'
+            const missionPassed = (ratio >= 4.5) && (fontSize <= 18) && (st1FontWeight === 'normal');
+            const missionBox = document.getElementById('st1-mission-box');
+            const missionStatus = document.getElementById('st1-mission-status');
+            const missionIcon = document.getElementById('st1-mission-icon');
+
+            if (missionPassed) {
+                missionBox.className = "p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-700 transition";
+                missionStatus.className = "mt-2 text-xs font-bold text-emerald-700 dark:text-emerald-400";
+                missionStatus.textContent = "✨ ภารกิจสำเร็จ! คุณสามารถสร้างข้อความขนาดปกติที่อ่านง่ายตามเกณฑ์ WCAG";
+                missionIcon.textContent = "🎉";
+                if (!userProgress.st1) {
+                    userProgress.st1 = true;
+                    saveProgress();
+                }
+            } else {
+                missionBox.className = "p-4 rounded-xl border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700/50 transition";
+                missionStatus.className = "mt-2 text-xs font-bold text-amber-700 dark:text-amber-400";
+                let reason = "";
+                if (fontSize > 18) reason += " (ขนาดอักษรต้องไม่เกิน 18 px)";
+                if (st1FontWeight !== 'normal') reason += " (ต้องใช้น้ำหนักปกติ)";
+                if (ratio < 4.5) reason += " (อัตราส่วนความต่างสีต้อง >= 4.5:1)";
+                missionStatus.textContent = `สถานะ: ยังไม่สำเร็จ ${reason}`;
+                missionIcon.textContent = "🎯";
+            }
+        }
+
+        function updateStatusBadge(elementId, isPassed) {
+            const el = document.getElementById(elementId);
+            const tag = el.querySelector('.status-tag');
+            if (isPassed) {
+                el.className = "p-2.5 rounded-xl border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800";
+                tag.className = "status-tag font-bold mt-1 text-emerald-600 dark:text-emerald-400";
+                tag.textContent = "ผ่าน";
+            } else {
+                el.className = "p-2.5 rounded-xl border bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50";
+                tag.className = "status-tag font-bold mt-1 text-red-500 dark:text-red-400";
+                tag.textContent = "ไม่ผ่าน";
+            }
+        }
+
+        const st2Canvas = document.getElementById('st2-canvas');
+        const st2Ctx = st2Canvas.getContext('2d');
+
+        // Create offscreen canvas for procedural raw scene drawing at original 1280x720
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = 1280;
+        offCanvas.height = 720;
+        const offCtx = offCanvas.getContext('2d');
+
+        function drawMasterScene() {
+            // Draw Gradient Sky
+            const skyGrad = offCtx.createLinearGradient(0, 0, 0, 450);
+            skyGrad.addColorStop(0, '#0284c7');
+            skyGrad.addColorStop(0.6, '#38bdf8');
+            skyGrad.addColorStop(1, '#fde047');
+            offCtx.fillStyle = skyGrad;
+            offCtx.fillRect(0, 0, 1280, 720);
+
+            // Draw Sun
+            offCtx.beginPath();
+            offCtx.arc(640, 320, 100, 0, Math.PI * 2);
+            offCtx.fillStyle = '#f97316';
+            offCtx.fill();
+
+            // Draw Mountain Range 1
+            offCtx.beginPath();
+            offCtx.moveTo(0, 500);
+            offCtx.lineTo(350, 220);
+            offCtx.lineTo(750, 520);
+            offCtx.lineTo(1280, 420);
+            offCtx.lineTo(1280, 720);
+            offCtx.lineTo(0, 720);
+            offCtx.fillStyle = '#1e3a8a';
+            offCtx.fill();
+
+            // Draw Mountain Range 2
+            offCtx.beginPath();
+            offCtx.moveTo(0, 580);
+            offCtx.lineTo(200, 420);
+            offCtx.lineTo(550, 620);
+            offCtx.lineTo(950, 340);
+            offCtx.lineTo(1280, 550);
+            offCtx.lineTo(1280, 720);
+            offCtx.lineTo(0, 720);
+            offCtx.fillStyle = '#065f46';
+            offCtx.fill();
+
+            // Fine detailed grid/text on scene to emphasize pixelation clarity
+            offCtx.fillStyle = '#ffffff';
+            offCtx.font = 'bold 36px Kanit';
+            offCtx.fillText('MM-LAB DIGITAL IMAGE TEST 1280x720', 50, 80);
+
+            // Fine check pattern at bottom
+            for (let x = 0; x < 1280; x += 20) {
+                offCtx.fillStyle = (x % 40 === 0) ? '#ffffff' : '#000000';
+                offCtx.fillRect(x, 680, 20, 40);
+            }
+        }
+        drawMasterScene();
+
+        function renderStation2() {
+            const scalePct = parseInt(document.getElementById('st2-res-slider').value);
+            const bitsPerChannel = parseInt(document.getElementById('st2-bit-slider').value);
+
+            const scaledW = Math.max(1, Math.round(1280 * (scalePct / 100)));
+            const scaledH = Math.max(1, Math.round(720 * (scalePct / 100)));
+
+            document.getElementById('st2-res-val').textContent = `${scalePct}% (${scaledW}x${scaledH})`;
+            
+            let colorBitsText = `${bitsPerChannel} บิต/ช่อง`;
+            if (bitsPerChannel === 8) colorBitsText += ' (24-bit TrueColor)';
+            else colorBitsText += ` (${bitsPerChannel * 3}-bit)`;
+            document.getElementById('st2-bit-val').textContent = colorBitsText;
+            document.getElementById('st2-canvas-dim').textContent = `${scaledW} x ${scaledH} px`;
+
+            // Draw downscaled to temp canvas then upscaled back without smoothing
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = scaledW;
+            tempCanvas.height = scaledH;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // Copy full resolution image to scaled temp canvas
+            tempCtx.drawImage(offCanvas, 0, 0, 1280, 720, 0, 0, scaledW, scaledH);
+
+            // Bit Quantization on image data if bitsPerChannel < 8
+            if (bitsPerChannel < 8) {
+                const imgData = tempCtx.getImageData(0, 0, scaledW, scaledH);
+                const data = imgData.data;
+                const levels = Math.pow(2, bitsPerChannel);
+                const step = 255 / (levels - 1);
+
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i]     = Math.round(Math.round(data[i] / step) * step);     // R
+                    data[i + 1] = Math.round(Math.round(data[i + 1] / step) * step); // G
+                    data[i + 2] = Math.round(Math.round(data[i + 2] / step) * step); // B
+                }
+                tempCtx.putImageData(imgData, 0, 0);
+            }
+
+            // Draw back to main preview canvas
+            st2Ctx.imageSmoothingEnabled = false;
+            st2Ctx.clearRect(0, 0, 1280, 720);
+            st2Ctx.drawImage(tempCanvas, 0, 0, scaledW, scaledH, 0, 0, 1280, 720);
+
+            // Calculations
+            const totalPossibleColors = Math.pow(2, bitsPerChannel * 3);
+            const rawBytes = scaledW * scaledH * bitsPerChannel * 3 / 8;
+            const rawMB = rawBytes / (1024 * 1024);
+
+            document.getElementById('st2-calc-colors').textContent = totalPossibleColors.toLocaleString();
+            document.getElementById('st2-calc-bytes').textContent = `${Math.round(rawBytes).toLocaleString()} B`;
+            document.getElementById('st2-calc-mb').textContent = `${rawMB.toFixed(2)} MB`;
+
+            // RGB Inspector quantizer preview
+            const r = parseInt(document.getElementById('st2-r-slider').value);
+            const g = parseInt(document.getElementById('st2-g-slider').value);
+            const b = parseInt(document.getElementById('st2-b-slider').value);
+
+            const origHex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+            document.getElementById('st2-color-preview').style.backgroundColor = origHex;
+            document.getElementById('st2-color-hex').textContent = origHex;
+
+            const levels = Math.pow(2, bitsPerChannel);
+            const step = 255 / (levels - 1);
+            const qR = Math.round(Math.round(r / step) * step);
+            const qG = Math.round(Math.round(g / step) * step);
+            const qB = Math.round(Math.round(b / step) * step);
+            const quantHex = '#' + [qR, qG, qB].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+            document.getElementById('st2-quant-hex').textContent = quantHex;
+
+            // Mission 2 Check:
+            // Goal: Raw size < 1 MB (1,048,576 Bytes) AND bitsPerChannel == 8 AND scaledW >= 640
+            const missionPassed = (rawBytes < 1048576) && (bitsPerChannel === 8) && (scaledW >= 640);
+            const missionBox = document.getElementById('st2-mission-box');
+            const missionStatus = document.getElementById('st2-mission-status');
+            const missionIcon = document.getElementById('st2-mission-icon');
+
+            if (missionPassed) {
+                missionBox.className = "p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-700 transition";
+                missionStatus.className = "mt-2 text-xs font-bold text-emerald-700 dark:text-emerald-400";
+                missionStatus.textContent = "✨ ภารกิจสำเร็จ! ลดขนาดไฟล์ดิบสำเร็จโดยรักษาความลึกสีและมิติภาพตามเงื่อนไข";
+                missionIcon.textContent = "🎉";
+                if (!userProgress.st2) {
+                    userProgress.st2 = true;
+                    saveProgress();
+                }
+            } else {
+                missionBox.className = "p-4 rounded-xl border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700/50 transition";
+                missionStatus.className = "mt-2 text-xs font-bold text-amber-700 dark:text-amber-400";
+                let reason = "";
+                if (rawBytes >= 1048576) reason += ` (ขนาดดิบ ${rawMB.toFixed(2)} MB เกิน 1 MB)`;
+                if (bitsPerChannel !== 8) reason += " (บิตต่อแม่สีต้องเป็น 8 บิต)";
+                if (scaledW < 640) reason += ` (ความกว้างภาพ ${scaledW}px ต่ำกว่า 640px)`;
+                missionStatus.textContent = `สถานะ: ยังไม่สำเร็จ ${reason}`;
+                missionIcon.textContent = "🎯";
+            }
+        }
+
+        const st3Canvas = document.getElementById('st3-canvas');
+        const st3Ctx = st3Canvas.getContext('2d');
+        let audioCtx = null;
+
+        function renderStation3() {
+            const sampleRate = parseInt(document.getElementById('st3-rate-select').value);
+            const bitDepth = parseInt(document.getElementById('st3-bit-slider').value);
+
+            document.getElementById('st3-bit-val').textContent = `${bitDepth} บิต (${Math.pow(2, bitDepth).toLocaleString()} ระดับ)`;
+
+            const signalFreq = 440; // Sine wave frequency
+            const nyquistPassed = sampleRate > (2 * signalFreq);
+            const pointsPerPeriod = sampleRate / signalFreq;
+            const totalLevels = Math.pow(2, bitDepth);
+            const bytesPerSec = (sampleRate * bitDepth) / 8;
+            const kbPerSec = bytesPerSec / 1024;
+
+            document.getElementById('st3-calc-nyquist').textContent = nyquistPassed ? "ผ่าน (>880 Hz)" : "ไม่ผ่าน (Aliasing!)";
+            document.getElementById('st3-calc-nyquist').className = nyquistPassed ? "text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5" : "text-sm font-bold text-red-500 dark:text-red-400 mt-0.5";
+
+            document.getElementById('st3-calc-pts').textContent = `${pointsPerPeriod.toFixed(2)} จุด`;
+            document.getElementById('st3-calc-levels').textContent = `${totalLevels.toLocaleString()} ระดับ`;
+            document.getElementById('st3-calc-bytes').textContent = `${kbPerSec.toFixed(2)} KB/s`;
+
+            // Canvas Waveform Drawing over 2 Periods (2 / 440 = ~0.00454 seconds)
+            st3Ctx.clearRect(0, 0, 800, 300);
+            const width = st3Canvas.width;
+            const height = st3Canvas.height;
+            const centerY = height / 2;
+            const amp = height * 0.38;
+
+            // Grid lines
+            st3Ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+            st3Ctx.lineWidth = 1;
+            st3Ctx.beginPath();
+            st3Ctx.moveTo(0, centerY);
+            st3Ctx.lineTo(width, centerY);
+            st3Ctx.stroke();
+
+            // 1. Draw Original Continuous Sine Wave (Thin Gray Line)
+            st3Ctx.beginPath();
+            st3Ctx.strokeStyle = '#94a3b8';
+            st3Ctx.lineWidth = 1.5;
+            for (let x = 0; x <= width; x++) {
+                let t = (x / width) * (2 / signalFreq); // 2 full periods
+                let y = centerY - amp * Math.sin(2 * Math.PI * signalFreq * t);
+                if (x === 0) st3Ctx.moveTo(x, y);
+                else st3Ctx.lineTo(x, y);
+            }
+            st3Ctx.stroke();
+
+            // 2. Sample points & Quantized step waveform
+            const numSamplesIn2Periods = Math.round(sampleRate * (2 / signalFreq));
+            const stepMax = totalLevels - 1;
+
+            st3Ctx.beginPath();
+            st3Ctx.strokeStyle = '#a855f7'; // Purple step line
+            st3Ctx.lineWidth = 2.5;
+
+            let prevX = 0;
+            let prevY = centerY;
+
+            for (let i = 0; i <= numSamplesIn2Periods; i++) {
+                let t = i / sampleRate;
+                let normVal = Math.sin(2 * Math.PI * signalFreq * t); // -1.0 to 1.0
+
+                // Quantization process
+                let quantizedNorm = Math.round(((normVal + 1) / 2) * stepMax) / stepMax * 2 - 1;
+                let sampleX = (t / (2 / signalFreq)) * width;
+                let sampleY = centerY - amp * quantizedNorm;
+
+                if (i === 0) {
+                    st3Ctx.moveTo(sampleX, sampleY);
+                } else {
+                    // Staircase horizontal then vertical step
+                    st3Ctx.lineTo(sampleX, prevY);
+                    st3Ctx.lineTo(sampleX, sampleY);
+                }
+
+                prevX = sampleX;
+                prevY = sampleY;
+            }
+            st3Ctx.stroke();
+
+            // Draw Sample Dots (Amber circles)
+            st3Ctx.fillStyle = '#f59e0b';
+            for (let i = 0; i <= numSamplesIn2Periods; i++) {
+                let t = i / sampleRate;
+                let normVal = Math.sin(2 * Math.PI * signalFreq * t);
+                let quantizedNorm = Math.round(((normVal + 1) / 2) * stepMax) / stepMax * 2 - 1;
+                let sampleX = (t / (2 / signalFreq)) * width;
+                let sampleY = centerY - amp * quantizedNorm;
+
+                st3Ctx.beginPath();
+                st3Ctx.arc(sampleX, sampleY, 4, 0, Math.PI * 2);
+                st3Ctx.fill();
+            }
+
+            // Mission 3 Check:
+            // Goal: Nyquist passed (sampleRate > 880) AND bitDepth >= 8 AND kbPerSec <= 20 KB/s (20,480 B/s)
+            const missionPassed = nyquistPassed && (bitDepth >= 8) && (bytesPerSec <= 20480);
+            const missionBox = document.getElementById('st3-mission-box');
+            const missionStatus = document.getElementById('st3-mission-status');
+            const missionIcon = document.getElementById('st3-mission-icon');
+
+            if (missionPassed) {
+                missionBox.className = "p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-700 transition";
+                missionStatus.className = "mt-2 text-xs font-bold text-emerald-700 dark:text-emerald-400";
+                missionStatus.textContent = "✨ ภารกิจสำเร็จ! สัญญาณเสียงไม่เกิด Aliasing และมีขนาดไฟล์เหมาะสม";
+                missionIcon.textContent = "🎉";
+                if (!userProgress.st3) {
+                    userProgress.st3 = true;
+                    saveProgress();
+                }
+            } else {
+                missionBox.className = "p-4 rounded-xl border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700/50 transition";
+                missionStatus.className = "mt-2 text-xs font-bold text-amber-700 dark:text-amber-400";
+                let reason = "";
+                if (!nyquistPassed) reason += " (อัตราสุ่มไม่ผ่านเงื่อนไข Nyquist)";
+                if (bitDepth < 8) reason += " (ความลึกบิตต้องอย่างน้อย 8 บิต)";
+                if (bytesPerSec > 20480) reason += ` (ขนาดเสียง ${kbPerSec.toFixed(1)} KB/s เกิน 20 KB/s)`;
+                missionStatus.textContent = `สถานะ: ยังไม่สำเร็จ ${reason}`;
+                missionIcon.textContent = "🎯";
+            }
+        }
+
+        // Web Audio API Synthesis Generator
+        function playAudioSample() {
+            const sampleRate = parseInt(document.getElementById('st3-rate-select').value);
+            const bitDepth = parseInt(document.getElementById('st3-bit-slider').value);
+            const msgEl = document.getElementById('st3-audio-msg');
+
+            if (sampleRate < 8000) {
+                msgEl.textContent = "⚠️ ไม่สามารถเล่นเสียงได้: อัตราสุ่มต่ำกว่า 8,000 Hz ต่ำเกินไปสำหรับ Web Audio Buffer ของเบราว์เซอร์";
+                msgEl.className = "text-[11px] text-red-600 dark:text-red-400 font-semibold";
+                return;
+            }
+
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                // Create AudioBuffer filled with our sampled and quantized PCM data
+                const duration = 1.0; // 1 second
+                const buffer = audioCtx.createBuffer(1, sampleRate * duration, sampleRate);
+                const channelData = buffer.getChannelData(0);
+                const stepMax = Math.pow(2, bitDepth) - 1;
+
+                for (let i = 0; i < channelData.length; i++) {
+                    let t = i / sampleRate;
+                    let normVal = Math.sin(2 * Math.PI * 440 * t);
+                    // Quantize signal
+                    let quantizedNorm = Math.round(((normVal + 1) / 2) * stepMax) / stepMax * 2 - 1;
+                    channelData[i] = quantizedNorm * 0.2; // Soft comfortable gain
+                }
+
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioCtx.destination);
+                source.start();
+
+                msgEl.textContent = `🔊 กำลังเล่นเสียงสังเคราะห์ 440 Hz (อัตราสุ่ม ${sampleRate.toLocaleString()} Hz, ${bitDepth} บิต)...`;
+                msgEl.className = "text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold";
+
+                source.onended = () => {
+                    msgEl.textContent = "* เสียงสังเคราะห์จาก Web Audio API ทำงานตามค่าสุ่มและ quantization จริง";
+                    msgEl.className = "text-[11px] text-purple-900 dark:text-purple-300";
+                };
+            } catch (err) {
+                console.error("Audio Playback Error:", err);
+                msgEl.textContent = "❌ เกิดข้อผิดพลาดในการเล่นเสียงบนอุปกรณ์นี้";
+                msgEl.className = "text-[11px] text-red-500 font-semibold";
+            }
+        }
+
+        const st4Canvas = document.getElementById('st4-canvas');
+        const st4Ctx = st4Canvas.getContext('2d');
+        let st4AnimId = null;
+        let ballX = 50;
+        let ballY = 150;
+        let ballVX = 280; // Velocity X (px/s)
+        let ballVY = 180; // Velocity Y (px/s)
+        let lastTimestamp = 0;
+        let accumulatedTime = 0;
+        let frameCounter = 0;
+        let totalSimulatedTime = 0;
+
+        function initStation4Loop() {
+            if (st4AnimId) cancelAnimationFrame(st4AnimId);
+            lastTimestamp = performance.now();
+            st4AnimId = requestAnimationFrame(updateStation4Animation);
+        }
+
+        function updateStation4Animation(now) {
+            const dt = (now - lastTimestamp) / 1000;
+            lastTimestamp = now;
+
+            const targetFPS = parseInt(document.getElementById('st4-fps-slider').value);
+            const frameInterval = 1 / targetFPS;
+
+            accumulatedTime += dt;
+
+            // Check reduced motion preference
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            if (prefersReducedMotion) {
+                // Static frame for reduced motion
+                drawBouncingBallFrame(400, 150);
+                document.getElementById('st4-frame-counter').textContent = "1 (Reduced Motion)";
+                document.getElementById('st4-time-counter').textContent = "0.00 s";
+                renderStation4Calculations();
+                return;
+            }
+
+            // Frame Stepping according to selected FPS
+            if (accumulatedTime >= frameInterval) {
+                while (accumulatedTime >= frameInterval) {
+                    // Update ball physics by frame step
+                    ballX += ballVX * frameInterval;
+                    ballY += ballVY * frameInterval;
+
+                    if (ballX <= 30 || ballX >= 800 - 30) ballVX *= -1;
+                    if (ballY <= 30 || ballY >= 350 - 30) ballVY *= -1;
+
+                    accumulatedTime -= frameInterval;
+                    frameCounter++;
+                    totalSimulatedTime += frameInterval;
+                }
+
+                drawBouncingBallFrame(ballX, ballY);
+                document.getElementById('st4-frame-counter').textContent = frameCounter.toLocaleString();
+                document.getElementById('st4-time-counter').textContent = `${totalSimulatedTime.toFixed(2)} s`;
+            }
+
+            renderStation4Calculations();
+            st4AnimId = requestAnimationFrame(updateStation4Animation);
+        }
+
+        function drawBouncingBallFrame(x, y) {
+            st4Ctx.clearRect(0, 0, 800, 350);
+
+            // Draw Background Grid
+            st4Ctx.strokeStyle = 'rgba(244, 63, 94, 0.15)';
+            st4Ctx.lineWidth = 1;
+            for (let gx = 0; gx < 800; gx += 50) {
+                st4Ctx.beginPath();
+                st4Ctx.moveTo(gx, 0);
+                st4Ctx.lineTo(gx, 350);
+                st4Ctx.stroke();
+            }
+
+            // Shadow
+            st4Ctx.beginPath();
+            st4Ctx.ellipse(x, 320, 25, 8, 0, 0, Math.PI * 2);
+            st4Ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            st4Ctx.fill();
+
+            // Ball Gradient
+            const ballGrad = st4Ctx.createRadialGradient(x - 8, y - 8, 5, x, y, 30);
+            ballGrad.addColorStop(0, '#fda4af');
+            ballGrad.addColorStop(0.7, '#f43f5e');
+            ballGrad.addColorStop(1, '#9f1239');
+
+            st4Ctx.beginPath();
+            st4Ctx.arc(x, y, 30, 0, Math.PI * 2);
+            st4Ctx.fillStyle = ballGrad;
+            st4Ctx.fill();
+            st4Ctx.strokeStyle = '#fff';
+            st4Ctx.lineWidth = 2;
+            st4Ctx.stroke();
+        }
+
+        function renderStation4Calculations() {
+            const fps = parseInt(document.getElementById('st4-fps-slider').value);
+            const compRatio = parseInt(document.getElementById('st4-comp-slider').value);
+
+            document.getElementById('st4-fps-val').textContent = `${fps} FPS`;
+            document.getElementById('st4-comp-val').textContent = `${compRatio} : 1`;
+
+            // Frame Size = 1280 x 720 x 3 Bytes = 2,764,800 Bytes
+            const rawFrameBytes = 1280 * 720 * 3;
+            const rawBitrateBps = rawFrameBytes * fps * 8; // bits per second
+            const compressedBitrateBps = rawBitrateBps / compRatio;
+
+            const compressedMbps = compressedBitrateBps / 1000000;
+            const rawMbps = rawBitrateBps / 1000000;
+
+            // 1 minute video size = (compressedBitrateBps * 60) / 8 bytes
+            const size1MinBytes = (compressedBitrateBps * 60) / 8;
+            let size1MinText = "";
+            if (size1MinBytes >= 1073741824) {
+                size1MinText = `${(size1MinBytes / 1073741824).toFixed(2)} GB`;
+            } else {
+                size1MinText = `${(size1MinBytes / 1048576).toFixed(2)} MB`;
+            }
+
+            document.getElementById('st4-calc-bitrate').textContent = `${compressedMbps.toFixed(2)} Mbit/s`;
+            document.getElementById('st4-calc-raw-bitrate').textContent = `(ดิบ: ${rawMbps.toFixed(1)} Mbps)`;
+            document.getElementById('st4-calc-size-1min').textContent = size1MinText;
+
+            // Mission 4 Check:
+            // Goal: Compressed Bitrate <= 5.0 Mbit/s AND fps >= 24
+            const missionPassed = (compressedMbps <= 5.0) && (fps >= 24);
+            const missionBox = document.getElementById('st4-mission-box');
+            const missionStatus = document.getElementById('st4-mission-status');
+            const missionIcon = document.getElementById('st4-mission-icon');
+
+            if (missionPassed) {
+                missionBox.className = "p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-700 transition";
+                missionStatus.className = "mt-2 text-xs font-bold text-emerald-700 dark:text-emerald-400";
+                missionStatus.textContent = "✨ ภารกิจสำเร็จ! บิตเรตอยู่ในเกณฑ์ส่งผ่านเครือข่ายได้โดยรักษาระดับเฟรมเรต";
+                missionIcon.textContent = "🎉";
+                if (!userProgress.st4) {
+                    userProgress.st4 = true;
+                    saveProgress();
+                }
+            } else {
+                missionBox.className = "p-4 rounded-xl border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700/50 transition";
+                missionStatus.className = "mt-2 text-xs font-bold text-amber-700 dark:text-amber-400";
+                let reason = "";
+                if (compressedMbps > 5.0) reason += ` (อัตราบิต ${compressedMbps.toFixed(1)} Mbps เกิน 5.0 Mbps)`;
+                if (fps < 24) reason += ` (เฟรมเรต ${fps} FPS ต่ำกว่า 24 FPS)`;
+                missionStatus.textContent = `สถานะ: ยังไม่สำเร็จ ${reason}`;
+                missionIcon.textContent = "🎯";
+            }
+        }
+
+        const quizData = [
+            {
+                id: 1,
+                question: "1. หากต้องการออกแบบบทเรียนออนไลน์สำหรับนักเรียนในพื้นที่ห่างไกลซึ่งมีอินเทอร์เน็ตความเร็วต่ำ ควรเลือกใช้องค์ประกอบมัลติมีเดียแบบใดจึงจะเหมาะสมที่สุด?",
+                options: [
+                    "วิดีโอความละเอียด 4K แบบไม่บีบอัดเพื่อความคมชัดสูงสุด",
+                    "เสียงพูดบีบอัดร่วมกับกราฟิกเวกเตอร์และข้อความลายเส้น",
+                    "ไฟล์ภาพถ่ายดิจิทัล 24-bit TrueColor Uncompressed ทุกหน้า",
+                    "ภาพเคลื่อนไหว GIF ขนาดใหญ่ 60 FPS"
+                ],
+                correct: 1,
+                explanation: "ถูกต้อง: เสียงที่บีบอัดและกราฟิกเวกเตอร์มีขนาดไฟล์เล็กมาก ช่วยให้ส่งผ่านเครือข่ายความเร็วต่ำได้ดีโดยไม่กระตุก"
+            },
+            {
+                id: 2,
+                question: "2. เมื่อขยายภาพถ่ายบนหน้าจอแล้วพบว่าขอบภาพมีลักษณะเป็นรอยแตกขั้นบันได (Pixelation) เกิดจากสาเหตุใดเป็นหลัก?",
+                options: [
+                    "จำนวนบิตต่อช่องสี (Bit Depth) สูงเกินไป",
+                    "ภาพมีความละเอียดจำนวนพิกเซล (Resolution) ต่ำเกินไป",
+                    "อัตราส่วนความต่างสี (Contrast Ratio) ต่ำเกินไป",
+                    "จอภาพไม่รองรับการแสดงผลแบบ TrueColor"
+                ],
+                correct: 1,
+                explanation: "ถูกต้อง: เมื่อภาพมีจำนวนพิกเซลต่ำ การขยายขนาดจะทำให้พิกเซลแต่ละจุดถูกขยายใหญ่จนเห็นเป็นช่องสี่เหลี่ยมแตกชัดเจน"
+            },
+            {
+                id: 3,
+                question: "3. ในการอัดเสียงพูดบทเรียน หากตั้งค่าอัตราสุ่มตัวอย่าง (Sampling Rate) ไว้ที่ 500 Hz จะส่งผลอย่างไรต่อคุณภาพเสียง?",
+                options: [
+                    "เสียงมีความคมชัดสูงกว่าระบบซีดีเพลง",
+                    "เกิดภาวะ Aliasing เสียงอู้อี้ขุ่นมัวและเพี้ยนเพราะต่ำกว่าเกณฑ์ Nyquist",
+                    "เสียงจะดังขึ้น 2 เท่าเพราะบิตเรตเพิ่มขึ้น",
+                    "ไม่มีผลกระทบใดๆ ต่อการได้ยินของมนุษย์"
+                ],
+                correct: 1,
+                explanation: "ถูกต้อง: เสียงพูดมนุษย์มีความถี่ถึงประมาณ 3,400 Hz ตามเงื่อนไข Nyquist ต้องใช้อัตราสุ่ม > 6,800 Hz (การใช้ 500 Hz จะต่ำกว่า 2x ความถี่สัญญาณ ทำให้สัญญาณเพี้ยนหนัก)"
+            },
+            {
+                id: 4,
+                question: "4. ข้อความตัวหนังสือสีเทาอ่อนบนพื้นหลังสีขาว มีอัตราส่วนความต่างสี (Contrast Ratio) เท่ากับ 2.3:1 ข้อใดสรุปได้ถูกต้องตามมาตรฐาน WCAG?",
+                options: [
+                    "ผ่านเกณฑ์ AAA สำหรับข้อความขนาดปกติ",
+                    "ไม่ผ่านเกณฑ์ AA เนื่องจากความต่างสีต่ำกว่า 4.5:1 อ่านยากสำหรับผู้มีปัญหาการมองเห็น",
+                    "ผ่านเกณฑ์ AA หากขยายขนาดเป็น 12 px",
+                    "เป็นชุดสีที่ดีที่สุดในการลดความเมื่อยล้าของสายตา"
+                ],
+                correct: 1,
+                explanation: "ถูกต้อง: WCAG AA กำหนดให้ข้อความปกติทั่วไปต้องมีความต่างสีอย่างน้อย 4.5:1 ค่า 2.3:1 จึงสอบตกเกณฑ์และอ่านได้ยากมาก"
+            },
+            {
+                id: 5,
+                question: "5. เหตุใดวิดีโอดิจิทัลระดับ HD (1280x720) จึงจำเป็นต้องผ่านกระบวนการบีบอัดข้อมูล (Compression) ก่อนนำไปใช้งานบนเว็บ?",
+                options: [
+                    "เพราะวิดีโอดิบมีอัตราบิตสูงถึง ~530 Mbps ซึ่งเกินกว่าแบนด์วิธเครือข่ายทั่วไปจะรองรับได้",
+                    "เพื่อเพิ่มอัตราเฟรมเรตให้สูงขึ้นเป็น 120 FPS",
+                    "เพื่อแปลงสัญญาณจากอนาล็อกให้เป็นดิจิทัล",
+                    "เพื่อเพิ่มความลึกสีจาก 8 บิตเป็น 32 บิต"
+                ],
+                correct: 0,
+                explanation: "ถูกต้อง: สัญญาณวิดีโอดิบ uncompressed HD 24 FPS ใช้ข้อมูลมหาศาล (~530 Mbps) การบีบอัดจึงจำเป็นอย่างยิ่งในการลดขนาดบิตเรตลงเหลือ 2-5 Mbps"
+            }
+        ];
+
+        let quizAnswers = {};
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            quizData.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = "p-5 rounded-xl border bg-gray-50/50 dark:bg-gray-800/40 border-gray-200 dark:border-gray-700 space-y-3";
+
+                const qTitle = document.createElement('h3');
+                qTitle.className = "text-sm font-bold text-gray-800 dark:text-gray-200 leading-relaxed";
+                qTitle.textContent = q.question;
+                card.appendChild(qTitle);
+
+                const optsDiv = document.createElement('div');
+                optsDiv.className = "space-y-2 pl-1";
+
+                q.options.forEach((opt, optIdx) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = getQuizOptionClass(q.id, optIdx);
+                    btn.onclick = () => handleQuizSelect(q.id, optIdx);
+                    btn.innerHTML = `<span class="font-mono-num font-bold mr-2">${String.fromCharCode(65 + optIdx)}.</span> ${opt}`;
+                    optsDiv.appendChild(btn);
+                });
+
+                card.appendChild(optsDiv);
+
+                // Explanation container if answered
+                if (quizAnswers[q.id] !== undefined) {
+                    const expDiv = document.createElement('div');
+                    const isCorrect = quizAnswers[q.id] === q.correct;
+                    expDiv.className = isCorrect 
+                        ? "p-3 rounded-lg text-xs bg-emerald-100/70 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300 font-medium"
+                        : "p-3 rounded-lg text-xs bg-rose-100/70 text-rose-900 dark:bg-rose-950/50 dark:text-rose-300 font-medium";
+                    expDiv.textContent = q.explanation;
+                    card.appendChild(expDiv);
+                }
+
+                container.appendChild(card);
+            });
+
+            evaluateQuizStatus();
+        }
+
+        function getQuizOptionClass(qId, optIdx) {
+            const userAns = quizAnswers[qId];
+            const q = quizData.find(item => item.id === qId);
+
+            if (userAns === undefined) {
+                return "w-full text-left p-3 rounded-lg text-xs border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-500 dark:hover:border-blue-400 transition";
+            }
+
+            if (optIdx === q.correct) {
+                return "w-full text-left p-3 rounded-lg text-xs border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold";
+            }
+
+            if (userAns === optIdx && userAns !== q.correct) {
+                return "w-full text-left p-3 rounded-lg text-xs border-2 border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 font-bold";
+            }
+
+            return "w-full text-left p-3 rounded-lg text-xs border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed";
+        }
+
+        function handleQuizSelect(qId, optIdx) {
+            quizAnswers[qId] = optIdx;
+            renderQuiz();
+        }
+
+        function resetQuiz() {
+            quizAnswers = {};
+            document.getElementById('quiz-result-banner').classList.add('hidden');
+            renderQuiz();
+        }
+
+        function evaluateQuizStatus() {
+            const totalQuestions = quizData.length;
+            const answeredCount = Object.keys(quizAnswers).length;
+
+            if (answeredCount < totalQuestions) return;
+
+            let score = 0;
+            quizData.forEach(q => {
+                if (quizAnswers[q.id] === q.correct) score++;
+            });
+
+            const banner = document.getElementById('quiz-result-banner');
+            const scoreText = document.getElementById('quiz-score-text');
+            const msgText = document.getElementById('quiz-msg');
+
+            banner.classList.remove('hidden');
+
+            if (score === totalQuestions) {
+                banner.className = "p-5 rounded-xl text-center space-y-2 border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 transition";
+                scoreText.className = "text-lg font-bold text-emerald-700 dark:text-emerald-300";
+                scoreText.textContent = `🏆 ยอดเยี่ยมมาก! คุณทำคะแนนได้ ${score} / ${totalQuestions} คะแนนเต็ม`;
+                msgText.textContent = "คุณผ่านการทดสอบสรุปและได้รับตราประทับองค์ความรู้ครบถ้วนทั้ง 5 สถานี!";
+
+                if (!userProgress.st5) {
+                    userProgress.st5 = true;
+                    saveProgress();
+                }
+            } else {
+                banner.className = "p-5 rounded-xl text-center space-y-2 border-2 border-amber-400 bg-amber-50 dark:bg-amber-950/30 transition";
+                scoreText.className = "text-lg font-bold text-amber-800 dark:text-amber-300";
+                scoreText.textContent = `ตอบถูก ${score} / ${totalQuestions} ข้อ`;
+                msgText.textContent = "พยายามอีกนิด! คุณต้องตอบถูกต้องทุกข้อเพื่อปลดล็อกตราประทับสรุปสุดท้าย (กดปุ่มเริ่มทำใหม่เพื่อลองอีกครั้ง)";
+            }
+        }
+
+        window.onload = function () {
+            initTheme();
+            updateBadgesUI();
+
+            // Station 1 Listeners
+            document.getElementById('st1-text-color').addEventListener('input', renderStation1);
+            document.getElementById('st1-bg-color').addEventListener('input', renderStation1);
+            document.getElementById('st1-size-slider').addEventListener('input', renderStation1);
+
+            // Station 2 Listeners
+            document.getElementById('st2-res-slider').addEventListener('input', renderStation2);
+            document.getElementById('st2-bit-slider').addEventListener('input', renderStation2);
+            document.getElementById('st2-r-slider').addEventListener('input', renderStation2);
+            document.getElementById('st2-g-slider').addEventListener('input', renderStation2);
+            document.getElementById('st2-b-slider').addEventListener('input', renderStation2);
+
+            // Station 3 Listeners
+            document.getElementById('st3-rate-select').addEventListener('change', renderStation3);
+            document.getElementById('st3-bit-slider').addEventListener('input', renderStation3);
+
+            // Station 4 Listeners
+            document.getElementById('st4-fps-slider').addEventListener('input', renderStation4Calculations);
+            document.getElementById('st4-comp-slider').addEventListener('input', renderStation4Calculations);
+
+            // Initial Renders
+            renderStation1();
+            renderStation2();
+            renderStation3();
+            initStation4Loop();
+            renderQuiz();
+        };
+    </script>
+</body>
+</html>
